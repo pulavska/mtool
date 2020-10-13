@@ -1,49 +1,49 @@
-Руководство по использованию Migration Tool 0.3.1 (далее mtool)
+Migration Tool 0.3.1 manual (hereinafter mtool)
 
-## Подготовка к работе
+## Getting started
 
-Перед началом работы с mtool необходимо его скофигурировать, используя команду: 
+Before starting work with mtool, you need to configure it using the command:
 
 ```
 php mtool config
 ```
 
-Доступные параметры:
+Available options:
 
-- настройка бд
-  * adapter  - адаптер бд, может принимать значения: "mysql"(по-умолчанию), "pgsql";
-  * host 	 - хост бд, может принимать любые значения;
-  * username - пользователь бд, может принимать любые значения;
-  * password - пароль пользователя бд, может принимать любые значения;
-  * dbname 	 - имя бд, может принимать любые значения;
-  * charset  - кодировка соединения с бд, значение по-умолчанию: "utf8" (в данный момент параметр не используется);
-- настройка путей
-  * path 	 - путь для хранения файлов миграций и снепшотов, может принимать любые значения, по-умолчанию: "../migrations/";
-- доп. настройки
-  * table 	 - таблица в бд хранящая имена примененных миграций, может принимать любые значения, по-умолчанию: "~migrations".
-	
-## Начало работы
+- database setup
+  * adapter  - db adapter, can take values: "mysql" (default), "pgsql";
+  * host     - database host, can take any values;
+  * username - database user, can take any values;
+  * password - database user password, can take any values;
+  * dbname   - database name, can take any values;
+  * charset  - encoding of the database connection, default value: "utf8" (the parameter is not used at the moment);
+- configuring paths
+  * path     - path for storing migration files and snapshots, can take any values, by default: "../migrations/";
+- add. customization
+  * table    - a table in the database that stores the names of applied migrations, can take any values, by default: "~ migrations".
+  * versionRegexp - version regular expression, by default is 3 digits: "\d{3}".
+## Beginning of work
 
-Для создания новой миграции необходимо вызвать команду:
+To create a new migration, you need to call the command:
 
 ```
 php mtool create XXX
 ```
 
-где XXX - номер версии в числовом варианте.
+where XXX is the numeric version number.
 
-в результате чего будет создан каталог указанный в настройках (если он не был создан заранее) и два файла миграции:
+As a result, the directory specified in the settings will be created (if it was not created beforehand) and two migration files:
 
 ```
 XXX_********_******_**_down.sql
 XXX_********_******_**_up.sql
 ```
 
-где `XXX_********_******_**` - имя миграции, соответствующее её версии и времени создания.
+where `XXX_********_******_**` is the name of the migration corresponding to its version and creation time.
 
-## Применение и отмена миграций
+## Applying and canceling migrations
 
-После того, как созданные в п.2 файлы, были заполнены запросами, миграцию можно применить используя команду `upgrade`:
+After the files were created and filled in step 2, the migration can be applied using the `upgrade` command:
 
 ```
 php mtool upgrade
@@ -51,9 +51,9 @@ php mtool upgrade
 php mtool up
 ```
 
-> Если количество не примененных миграций больше одной, то при вызове команды `php mtool upgrade` будут применены все не примененные миграции.
+> If the number of unapplied migrations is more than one, then calling the `php mtool upgrade` command will apply all unapplied migrations.
 
-Для отмены миграции необходимо использовать комманду `downgrade`:
+To cancel migration, use the `downgrade` command:
 
 ```
 php mtool downgrade
@@ -61,19 +61,19 @@ php mtool downgrade
 php mtool down
 ```
 
-> Если количество примененных миграций больше одной, то вызов команды `php mtool downgrade` отменит только последнюю примененную миграцию.
+> If the number of applied migrations is more than one, then calling the command `php mtool downgrade` will undo only the last applied migration.
 
-### Применение/отмена миграций по версии
+### Applying/undoing migrations by version
 
-Можно указывать для команд применения/отмены миграций параметр `-v XXX`, где XXX - номер версии.
-При этом применение/отмена миграций будет происходить только в рамках миграций для текущей весии.
+You can specify the `-v XXX` parameter for the commands to apply/cancel migrations, where XXX is the version number.
+In this case, applying/cancellation of migrations will occur only within the framework of migrations for the current version.
 
-> !!! Будьте внимательны, если отменяете миграции предыдущих версий, и в применённых миграциях следующих версий используются те же таблицы - тогда возможны конфликты по этим таблицам в будущем !!!
+> !!! Be careful if you cancel migrations of previous versions, and in the applied migrations of the next versions the same tables are used - then there may be conflicts on these tables in the future !!!
 
-### Применение/отмена миграций по имени 
-Допустимо использование команд применения/отмены миграций с параметром (имя миграции вида `XXX_********_******_**`).
+### Applying/undoing migrations by name
+It is allowed to use the commands for applying/canceling migrations with the parameter (migration name like `XXX _ ******** _ ****** _ **`).
 
-Например, существуют такие миграции:
+For example, there are such migrations:
 
 ```
   00000000_000000_10[+],
@@ -83,80 +83,80 @@ php mtool down
   00000000_000000_50[-];
 ```
 
-> Примечание: "+" - примененная миграция, "-" - не примененная миграция
+> Note: "+" - applied migration, "-" - not applied migration
 
-`php mtool upgrade` - будут применены миграции: 00000000_000000_30, 00000000_000000_40, 00000000_000000_50;
+`php mtool upgrade` - migrations will be applied: 00000000_000000_30, 00000000_000000_40, 00000000_000000_50;
 
-`php mtool upgrade 00000000_000000_40` - будут применены миграции: 00000000_000000_30, 00000000_000000_40;
+`php mtool upgrade 00000000_000000_40` - migrations will be applied: 00000000_000000_30, 00000000_000000_40;
 
-`php mtool downgrade` - будут отменены миграции: 00000000_000000_20;
+`php mtool downgrade` - migrations will be canceled: 00000000_000000_20;
 
-`php mtool downgrade 00000000_000000_10` - будут отменены миграции: 00000000_000000_20, 00000000_000000_10;
-
-
-> !!! При этом миграции будут применяться и отменяться все предыдущие или последующие, вне зависимости от версий
+`php mtool downgrade 00000000_000000_10` - migrations will be canceled: 00000000_000000_20, 00000000_000000_10;
 
 
-### Применение одной отдельной миграции
+> !!! In this case, migrations will be applied and canceled all previous or subsequent, regardless of versions
 
-Для команды применения миграций можно указать параметр `-u XXX_********_******_**`, где `XXX_********_******_**` - номер конкретной миграции.
-При этом будет применена только одна эта миграция, где бы она не находилась.
 
-## Получение информации о текущих мирациях
+### Applying one separate migration
 
-Для получения имени текущей миграции команда:
+For the command to apply migrations, you can specify the parameter `-u XXX _ ******** _ ****** _ **`, where `XXX _ ******** _ ****** _ ** `- number of a specific migration.
+In this case, only this one migration will be applied, wherever it is.
+
+## Getting information about current miracles
+
+To get the name of the current migration, the command:
 
 ```
 php mtool current
 ```
 
-Для получения списка миграций команда:
+To get a list of migrations, the command:
 
 ```
 php mtool list
 ```
 
-данная команда выводит подсвеченый разными цветами список миграций.
+this command displays a list of migrations highlighted in different colors.
 
-Используются такие цвета:
+The following colors are used:
 
-* голубой - миграция не применена и доступна в файловой системе;
-* зеленый - миграция применена и доступна в файловой системе;
-* красный - миграция применена, но не доступна в файловой системе.
-	
-## Создание и применение снепшотов
+* blue - migration is not applied and is available in the file system;
+* green - migration has been applied and is available in the file system;
+* red - migration has been applied, but not available in the file system.
 
-Для создания снепшота текущего состояния бд команда:
+## Create and apply snapshots
+
+To create a snapshot of the current database state, the command:
 
 ```
 php mtool snapshot
 ```
-в результате данной команды будет создан файл снепшота - `********_******_**_snapshot.sql`, где `********_******_**` - имя снепшота, соответствующее времени его создания.
+as a result of this command, a snapshot file will be created - `******** _ ****** _ ** _ snapshot.sql`, where` ******** _ ****** _ ** `- snapshot name corresponding to the time of its creation.
 
-При создании снепшотов используются внешние приложения: для mysql - mysqldump, для pgsql - pg_dump.
+When creating snapshots, external applications are used: for mysql - mysqldump, for pgsql - pg_dump.
 
-Для применения снепшота необходимо воспользоваться командой:
+To use a snapshot, you must use the command:
 
 ```
 php mtool deploy
 ```
-будет вызван диалог со списком доступных снепшотов и возможностью выбрать один из них для применения.
+a dialog will be called with a list of available snapshots and the ability to select one of them to use.
 
-Также существуют такие варианты использования данной команды:
+There are also such options for using this command:
 
 ```
 php mtool deploy last
 ```
-будет применен последний созданный снепшот
+the last created snapshot will be applied
 
 ```
 php mtool deploy ********_******_**
 ```
-будет применен выбранный снепшот
+the selected snapshot will be applied
 
-## Справка
+## Help
 
-Для получения короткой справочной информации:
+For a quick help (show all possible commands):
 
 ```
 php mtool help
