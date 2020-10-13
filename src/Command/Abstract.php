@@ -186,7 +186,10 @@ abstract class MTool_Command_Abstract
     public function getAvailableMigrations($version = null)
     {
         if (is_null($version)) {
-            $version = self::VERSION_REGEXPR;
+            $version = $this->getConfig()->versionRegexp;
+            if (empty($version)) {
+                $version = self::VERSION_REGEXPR;
+            }
         }
 
         $dir = PATH . '/' . $this->getConfig()->path;
